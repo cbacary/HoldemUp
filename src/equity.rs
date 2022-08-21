@@ -1,7 +1,6 @@
 
-#![feature(hash_drain_filter)]
 pub mod Equity {
-    use crate::hand::{Hand, HandValue};
+    use crate::hand::{HandValue, Hand};
     use crate::card::CardFlags::*;  
 
     use std::collections::HashMap;
@@ -15,6 +14,7 @@ pub mod Equity {
     {
         let current_hand_value = get_current_hand_value(&mut your_hand.to_vec(), &mut board.to_vec());
         if cards_left_to_draw == 0 {
+            
             let mut h: HashMap<u32, f64> = HashMap::new();
             h.insert(current_hand_value.to_index() as u32, current_chance);
             return h;
@@ -24,9 +24,8 @@ pub mod Equity {
             let org_card = deck[card_num];
             let chance = (1. as f64) / (deck.len() as f64 - 1. ) * current_chance;
             board.push(org_card);
-            // let hand_val = get_current_hand_value(&mut your_hand.to_vec(), &mut board.to_vec());
             deck.remove(card_num);
-            let map = calculate_odds(your_hand, board, deck, original_hand, original_cards_left_to_draw, cards_left_to_draw - 1, chance);
+            let map = calculate_odds(&mut your_hand.to_vec(), &mut board.to_vec(), deck, original_hand, original_cards_left_to_draw, cards_left_to_draw - 1, chance);
             deck.insert(card_num, org_card);
             board.remove(board.len() - 1);
             for (key, val) in map.iter() {
@@ -42,18 +41,20 @@ pub mod Equity {
         let mut hand_values: Vec<HandValue> = vec![];
 
         let mut all_cards: Vec<u32>= vec![];
-        all_cards.append(your_hand);
-        all_cards.append(board);
+        all_cards.append(&mut your_hand.to_vec());
+        all_cards.append(&mut board.to_vec());
         
         let mut suits = get_only_suits(all_cards.to_vec());
         let mut ranks = get_removed_suits(all_cards.to_vec());
+        let hand_ranks = get_removed_suits(your_hand.to_vec());
+        let board_ranks = get_removed_suits(board.to_vec());
 
         suits.sort();
         ranks.sort();
 
-        hand_values.push(find_pair(&mut ranks.to_vec()));        
-        hand_values.push(find_straight(&ranks));
-        hand_values.push(find_flush(suits));
+        hand_values.push(find_pair(hand_ranks.to_vec(), board_ranks.to_vec()));        
+        hand_values.push(find_straight(&ranks.to_vec()));
+        hand_values.push(find_flush(suits.to_vec()));
 
         hand_values.sort();
 
@@ -61,76 +62,102 @@ pub mod Equity {
 
     }
 
-    pub fn find_pair(cards: &mut Vec<u32>)  -> HandValue {
+    pub fn find_pair(cards: Vec<u32>, board: Vec<u32>)  -> HandValue {
         
-        cards.sort();
+        // let mut cards = cards.to_vec();
+        // cards.sort();
+        // board.sort();
 
-        let mut card_map: HashMap<u32, u32> = HashMap::new();
 
-        for i in 0..cards.len() {
-            card_map.entry(cards[i]).and_modify(|counter| *counter += 1).or_insert(1);
-            // if current_pair_card != cards[i] {
-            //     last_checked_index = i;
-            //     break;
-            // }
-            // last_checked_index = i;
-            // first_pair_count += 1;
+        let mut hand_map: HashMap<u32, u32> = HashMap::new();
+        let mut board_map: HashMap<u32, u32> = HashMap::new();
+        
+        for i in cards {
+            hand_map.entry(i).and_modify(|counter| *counter += 1).or_insert(1);
         }
-        let mut greatest_one = 0;
-        let mut greatest_two = 0;
 
-        for (key, val) in card_map.iter() {
-            if val > &greatest_one {
-                greatest_one = *val;
-            } else if val > &greatest_two {
-                greatest_two = *val;
+       
+        for i in board {
+            board_map.entry(i).and_modify(|counter| *counter += 1).or_insert(1);
+        }
+        
+        // Check if board has pair
+        // let mut board_pair = 0;
+        // for val in board_map.values() {
+        //     if *val >= 2 && *val > board_pair {
+        //         board_pair = *val;
+        //     }
+        // }
+
+        // // Check if we have a pair
+        // let mut our_pair = 0;
+        // for val in hand_map.values() {
+        //     if *val >= 2 {
+        //         our_pair = *val;
+        //     }
+        // }
+
+        // let mut full_h = HandValue::HighCard;
+        // let mut two_p = HandValue::HighCard;
+        // if our_pair == 2 {
+        //     // Check if full house
+        //     if board_pair >= 3 {
+        //         full_h = HandValue::FullHouse;
+        //     } else if board_pair  == 2 {
+        //         two_p = HandValue::TwoPair;
+        //     }
+        // }
+        
+        // Check if pair exists between board and player.
+        let mut pocket = HandValue::HighCard;
+        for i in hand_map.values() {
+            if i == &2 {
+                pocket = HandValue::OnePair;
             }
         }
 
-        // let old_first_pair_val = first_pair_count;
-        // if first_pair_count < 2 {
-        //     first_pair_count = 0;
-        // }
-
-        // let next_card_pair_set = cards[last_checked_index];
-
-        // for i in (last_checked_index + 1)..cards.len() {
-        //     if next_card_pair_set != cards[i] {
-        //         break;
-        //     }
-        //     second_pair_count += 1;
-        // }
-        // let old_second_pair_count = second_pair_count;
-        // if second_pair_count < 2 {
-        //     second_pair_count = 0;
-        // }
-
-        // Do equity calculations
-        if greatest_one < 2 {
-            greatest_one = 0;
+        let mut larger_pair = 0;
+        let mut smaller_pair = 0;
+        let mut board_pair = 0;
+        for (key, val) in board_map {
+            if let Some(v) = hand_map.get(&key) {
+                let pair_size = val + *v;
+                if pair_size > larger_pair {
+                    smaller_pair = larger_pair;
+                    larger_pair = pair_size;                    
+                } else if pair_size > smaller_pair {
+                    smaller_pair = pair_size;
+                }
+            }
+            if val >= 2 && val > board_pair {
+                board_pair = val;
+            }
         }
-        if greatest_two < 2 {
-            greatest_two = 0;
-        }
-        let first_hand_val = match greatest_one {
+       
+        let first_hand_val = match larger_pair {
             2 => HandValue::OnePair,
             3 => HandValue::ThreeKind,
             4 => HandValue::FourKind,
             _ => HandValue::HighCard
         };
-        let second_hand_val = match greatest_two {
+        let second_hand_val = match smaller_pair {
             2 => HandValue::OnePair,
             3 => HandValue::ThreeKind,
             4 => HandValue::FourKind,
             _ => HandValue::HighCard
         };
-        let final_hand_val =  match greatest_one + greatest_two {
+        let final_hand_val =  match larger_pair + smaller_pair {
             4 => HandValue::TwoPair,
             5 => HandValue::FullHouse,
             _ => HandValue::HighCard
         };
+        if pocket == HandValue::OnePair && board_pair >= 2 {
+            if board_pair == 2 {
+                pocket = HandValue::TwoPair;
+            }
+        }
 
-        let mut v = vec![first_hand_val, second_hand_val, final_hand_val];
+        let mut v = vec![first_hand_val, second_hand_val, final_hand_val, pocket];
         v.sort();
 
         return v[v.len() - 1];
@@ -183,7 +210,7 @@ pub mod Equity {
         return HandValue::HighCard;
     }
 
-    fn get_removed_suits(cards: Vec<u32>) -> Vec<u32> {
+    pub fn get_removed_suits(cards: Vec<u32>) -> Vec<u32> {
         let mut cards_no_suits: Vec<u32> = vec![];
         for i in cards {
             // let c = *i  (Heart | Diamond | Spade | Club);
@@ -204,5 +231,30 @@ pub mod Equity {
         }
         return cards_suits;
     }
+}
 
+#[cfg(test)]
+mod tests {
+    use super::Equity::{get_current_hand_value};
+    use crate::hand::HandValue;
+    use rand::Rng;
+    use crate::card::CardFlags::*;
+    #[test]
+    fn get_current_hand_value_test() {
+        let mut card: u32 = 1;
+        let mut under_card: u32 = 4;
+        let suits = vec![Heart, Diamond, Spade, Club];
+        for i in 1..12 {
+            let suit1 = suits[rand::thread_rng().gen_range(0..suits.len())];
+            let suit2 = suits[rand::thread_rng().gen_range(0..suits.len())];
+            let mut hand = vec![card | suit1, (card) | suit2, under_card | suit2];
+            let mut board: Vec<u32> = vec![];
+            let hand_val = get_current_hand_value(&mut hand.to_vec(), &mut board);
+
+            assert_eq!(hand_val, HandValue::OnePair);
+            under_card = 1;
+            card *= 2;
+            
+        }
+    }
 }

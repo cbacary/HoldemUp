@@ -84,16 +84,15 @@ fn run_game_loop() {
             let h = HandValue::from_index(hand);
             println!("{:#?} has a chance {}", h, chance * 100.);
         }
-       
 
     }
 }
 
 fn main() {
 
-    run_game_loop();
+    // run_game_loop();
 
-    let mut your_hand = vec![Six | Diamond, Five | Spade];
+    let mut your_hand = vec![Ace | Spade, Ace | Diamond];
     let mut board: Vec<u32> = vec![];
 
     let hand_value = get_current_hand_value(&mut your_hand.to_vec(), &mut board);
@@ -114,10 +113,12 @@ fn main() {
         }
     }
 
-    indicies_to_remove.reverse();
+
+    let mut count = 0;
 
     for i in indicies_to_remove {
-        deck.remove(i);
+        deck.remove(i - count);
+        count += 1;
     }
 
     let num_of_card = deck.iter().filter(|c| get_rank(**c) == Ace || get_rank(**c) == King);

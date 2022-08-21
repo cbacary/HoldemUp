@@ -30,64 +30,6 @@ impl Hand {
         Hand { cards: vec![] , hand_value: HandValue::HighCard }
     }
     
-    // pub fn get_pair_equities(&mut self, ) {
-    //     let cards = self.get_removed_suits();
-    //     let pair = self.find_pair(&cards);
-
-    //     if pair == HandValue::FourKind {
-    //         return;
-    //     } else if pair == HandValue::FullHouse {
-    //         // Calculate the cards neccecary to get a fullhouse
-
-    //     }
-    // }
-
-    // pub fn update_hand(&mut self, new_cards: &mut Vec<u32>) {
-    //     self.cards.append(new_cards);
-
-    //     // This allows us to sort through the cards very easily making
-    //     // calculating straight and flush much easeir. 
-    //     let mut removed_suits: Vec<u32> = self.get_removed_suits();
-    //     let mut only_suits: Vec<u32> = self.get_only_suits();
-
-    //     removed_suits.sort();
-    //     only_suits.sort();
-
-    //     let mut hand_values: Vec<HandValue> = vec![];
-
-    //     let mut straight = self.find_straight(&removed_suits);
-
-    //     println!("{:#?}", straight);
-
-    //     let mut flush = self.find_flush(only_suits);
-        
-    //     if straight == HandValue::RoyalStraight {
-    //         if flush == HandValue::Flush {
-    //             // First check if royal flush
-    //             self.hand_value = HandValue::RoyalFlush;
-    //             return;
-    //         } else {
-    //             straight = HandValue::Straight;
-    //         }
-    //     }
-
-    //     if straight == HandValue::Straight && flush == HandValue::Flush {
-    //         straight = HandValue::StraightFlush;
-    //         flush = HandValue::HighCard;
-    //     }
-
-    //     hand_values.push(straight);
-    //     hand_values.push(flush);
-
-    //     let pair = self.find_pair(&removed_suits);
-    //     hand_values.push(pair);
-
-    //     hand_values.sort();
-
-    //     self.hand_value = hand_values[hand_values.len() - 1];
-
-    // }
-
     pub fn construct_deck() -> Vec<u32> {
         let mut deck = vec![];
         let mut current_card = 1;
