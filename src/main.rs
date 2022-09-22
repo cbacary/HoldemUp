@@ -2,14 +2,14 @@ pub mod card;
 pub mod hand;
 pub mod equity;
 
-use std::{io, vec, num};
+use std::{io, vec};
 
 use hand::{Hand, HandValue};
-use card::CardFlags::*;
-use equity::Equity::{calculate_odds, get_current_hand_value};
+use card::card_flags::*;
+use equity::equity::{calculate_odds, get_current_hand_value};
 
 fn run_game_loop() {
-    println!("Directions\n------------------------------------------\nCards 2 through 9 are denoted as numbers.\nCase Sensitive\nTen = T\nJack = J\nQueen = Q\nKing = K\nAce = A\n------------------------------------------\n\n");
+    println!("Directions\n------------------------------------------\nCards 2 through 9 are denoted as numbers.\nCase Sensitive\nTEN = T\nJACK = J\nQUEEN = Q\nKING = K\nACE = A\n------------------------------------------\n\n");
     loop {
         let mut your_hand = vec![];
         let mut board: Vec<u32> = vec![];
@@ -33,11 +33,8 @@ fn run_game_loop() {
             continue;
         }
 
-        let l = player_hand.len();
-
-
         let mut player_hand_chars = player_hand.chars();
-        for i in 0..(player_hand.len() / 2) {
+        for _ in 0..(player_hand.len() / 2) {
             let mut s = String::new();
             s.push(player_hand_chars.next().unwrap());
             s.push(player_hand_chars.next().unwrap());
@@ -46,7 +43,7 @@ fn run_game_loop() {
         }
         
         let mut board_hand_chars = board_hand.chars();
-        for i in 0..(board_hand.len() / 2) {
+        for _ in 0..(board_hand.len() / 2) {
             let mut s = String::new();
             s.push(board_hand_chars.next().unwrap());
             s.push(board_hand_chars.next().unwrap());
@@ -66,6 +63,7 @@ fn run_game_loop() {
             }
         }
 
+        indicies_to_remove.sort();
         indicies_to_remove.reverse();
 
         for i in indicies_to_remove {
@@ -89,53 +87,5 @@ fn run_game_loop() {
 }
 
 fn main() {
-
-    // run_game_loop();
-
-    let mut your_hand = vec![Ace | Spade, Ace | Diamond];
-    let mut board: Vec<u32> = vec![];
-
-    let hand_value = get_current_hand_value(&mut your_hand.to_vec(), &mut board);
-
-    println!("{:#?}", hand_value);
-
-    println!("{:#?}", hand_value);
-
-    let deck = &mut Hand::construct_deck();
-
-    let mut indicies_to_remove = vec![];
-
-    for i in 0..your_hand.len() {
-        for j in 0..deck.len() {
-            if deck[j] == your_hand[i] {
-                indicies_to_remove.push(j);
-            }
-        }
-    }
-
-
-    let mut count = 0;
-
-    for i in indicies_to_remove {
-        deck.remove(i - count);
-        count += 1;
-    }
-
-    let num_of_card = deck.iter().filter(|c| get_rank(**c) == Ace || get_rank(**c) == King);
-
-    for i in num_of_card {
-        println!("{}", deck_to_str(vec![*i]));
-    }
-
-
-    println!("{}", deck.len());
-
-    let odds_map = calculate_odds(
-        &mut your_hand, &mut board, deck, hand_value, 
-        3, 3, 1.);
-
-    for (hand, chance) in odds_map {
-        let h = HandValue::from_index(hand);
-        println!("{:#?} has a chance {}", h, chance * 100.);
-    }
+    run_game_loop();
 }

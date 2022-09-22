@@ -1,7 +1,7 @@
 
-pub mod Equity {
-    use crate::hand::{HandValue, Hand};
-    use crate::card::CardFlags::*;  
+pub mod equity {
+    use crate::hand::{HandValue};
+    use crate::card::card_flags::*;  
 
     use std::collections::HashMap;
     use std::vec;
@@ -104,7 +104,7 @@ pub mod Equity {
         //     if board_pair >= 3 {
         //         full_h = HandValue::FullHouse;
         //     } else if board_pair  == 2 {
-        //         two_p = HandValue::TwoPair;
+        //         two_p = HandValue::TWOPair;
         //     }
         // }
         
@@ -136,24 +136,24 @@ pub mod Equity {
        
         let first_hand_val = match larger_pair {
             2 => HandValue::OnePair,
-            3 => HandValue::ThreeKind,
-            4 => HandValue::FourKind,
+            3 => HandValue::THREEKind,
+            4 => HandValue::FOURKind,
             _ => HandValue::HighCard
         };
         let second_hand_val = match smaller_pair {
             2 => HandValue::OnePair,
-            3 => HandValue::ThreeKind,
-            4 => HandValue::FourKind,
+            3 => HandValue::THREEKind,
+            4 => HandValue::FOURKind,
             _ => HandValue::HighCard
         };
         let final_hand_val =  match larger_pair + smaller_pair {
-            4 => HandValue::TwoPair,
+            4 => HandValue::TWOPair,
             5 => HandValue::FullHouse,
             _ => HandValue::HighCard
         };
         if pocket == HandValue::OnePair && board_pair >= 2 {
             if board_pair == 2 {
-                pocket = HandValue::TwoPair;
+                pocket = HandValue::TWOPair;
             }
         }
 
@@ -180,7 +180,7 @@ pub mod Equity {
                 next_value = cards[i] * 2;
             }
             if cards_in_a_row == 5 {
-                if cards[i] == Ace {
+                if cards[i] == ACE {
                     return HandValue::RoyalStraight;
                 }
                 return HandValue::Straight;
@@ -213,10 +213,10 @@ pub mod Equity {
     pub fn get_removed_suits(cards: Vec<u32>) -> Vec<u32> {
         let mut cards_no_suits: Vec<u32> = vec![];
         for i in cards {
-            // let c = *i  (Heart | Diamond | Spade | Club);
-            let c = i & (Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Jack | King | Queen | Ace);
+            // let c = *i  (HEART | DIAMOND | SPADE | CLUB);
+            let c = i & (TWO | THREE | FOUR | FIVE | SIX | SEVEN | EIGHT | NINE | TEN | JACK | KING | QUEEN | ACE);
 
-            // let c  = c ^ Heart ^ Diamond ^ Spade ^ Club;
+            // let c  = c ^ HEART ^ DIAMOND ^ SPADE ^ CLUB;
             cards_no_suits.push(c);
         }
         return cards_no_suits;
@@ -225,8 +225,8 @@ pub mod Equity {
     fn get_only_suits(cards: Vec<u32>) -> Vec<u32> {
         let mut cards_suits: Vec<u32> = vec![];
         for i in cards {
-            let c = i | Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Jack | King | Queen | Ace;
-            let c = c ^ Two ^ Three ^ Four ^ Five ^ Six ^ Seven ^ Eight ^ Nine ^ Ten ^ Jack ^ King ^ Queen ^ Ace;
+            let c = i | TWO | THREE | FOUR | FIVE | SIX | SEVEN | EIGHT | NINE | TEN | JACK | KING | QUEEN | ACE;
+            let c = c ^ TWO ^ THREE ^ FOUR ^ FIVE ^ SIX ^ SEVEN ^ EIGHT ^ NINE ^ TEN ^ JACK ^ KING ^ QUEEN ^ ACE;
             cards_suits.push(c);
         }
         return cards_suits;
@@ -235,15 +235,15 @@ pub mod Equity {
 
 #[cfg(test)]
 mod tests {
-    use super::Equity::{get_current_hand_value};
+    use super::equity::{get_current_hand_value};
     use crate::hand::HandValue;
     use rand::Rng;
-    use crate::card::CardFlags::*;
+    use crate::card::card_flags::*;
     #[test]
     fn get_current_hand_value_test() {
         let mut card: u32 = 1;
         let mut under_card: u32 = 4;
-        let suits = vec![Heart, Diamond, Spade, Club];
+        let suits = vec![HEART, DIAMOND, SPADE, CLUB];
         for i in 1..12 {
             let suit1 = suits[rand::thread_rng().gen_range(0..suits.len())];
             let suit2 = suits[rand::thread_rng().gen_range(0..suits.len())];
