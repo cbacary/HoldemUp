@@ -9,7 +9,7 @@ use card::card_flags::*;
 use equity::equity::{calculate_odds, get_current_hand_value};
 
 fn run_game_loop() {
-    println!("Directions\n------------------------------------------\nCards 2 through 9 are denoted as numbers.\nCase Sensitive\nTEN = T\nJACK = J\nQUEEN = Q\nKING = K\nACE = A\n------------------------------------------\n\n");
+    println!("Directions\n------------------------------------------\nCards 2 through 9 are denoted as numbers.\nCase Sensitive\nTEN = T\nJACK = J\nQUEEN = Q\nKING = K\nACE = A\nh = Heart\ns = spade\nc = club\nd = diamond\n------------------------------------------\n\n");
     loop {
         let mut your_hand = vec![];
         let mut board: Vec<u32> = vec![];

@@ -12,9 +12,9 @@ pub mod equity {
             original_hand: HandValue, original_cards_left_to_draw: u32, 
             cards_left_to_draw: u32, current_chance: f64)  -> HashMap<u32, f64>
     {
-        let current_hand_value = get_current_hand_value(&mut your_hand.to_vec(), &mut board.to_vec());
+        
         if cards_left_to_draw == 0 {
-            
+            let current_hand_value = get_current_hand_value(&mut your_hand.to_vec(), &mut board.to_vec());
             let mut h: HashMap<u32, f64> = HashMap::new();
             h.insert(current_hand_value.to_index() as u32, current_chance);
             return h;
